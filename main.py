@@ -12,8 +12,11 @@ class Cgen:
     npos = -1
     version = '0.1'
 
-    def __init__(self):
+    def __init__(self, input_file, output_path_file, Type):
         sys.setrecursionlimit(10 ** 6)
+        self.input_file = input_file
+        self.output_path_file = output_path_file
+        self.Type = Type
 
     def convert_to_mofset(self, input_node, p, n: float, l: float, use_sizing: bool, output, file_output):
         pun = input_node.deMorgan()
@@ -99,11 +102,11 @@ class Cgen:
         print("\tf2=((vi&(b|c'))|e&(f|g)|(k&L&P&U)|(W|R))' p=4 L=2 n=2")
         print("\tf3=((vi&(b|c'))|e&(f'|g)|(k'&L&P&U)|(W|R))' p=4 L=2 n=2")
 
-    def interactive_mode(self, input_file, output_path_file, ):
+    def interactive_mode(self):
         n = 0.0
         p = 0.0
         l = 0.0
-        input_string = input("Please insert your input: ") if input_file is None else input_file
+        input_string = input("Please insert your input: ") if self.input_file is None else self.input_file
         input_string = input_string.split()
         for token in input_string:
             if token[0] == 'l' or token[0] == 'L':
@@ -140,7 +143,7 @@ class Cgen:
         output, file_output = self.convert_to_mofset(node_tree, p, n, l, use_sizing, output, file_output)
         print(output)
         path = input("Please input a path to write to txt file. Type q to quit and ignore writing to file: ") \
-            if output_path_file is None else output_path_file
+            if self.output_path_file is None else self.output_path_file
 
         if path != 'q' and path != 'Q':
             if not path.endswith('.txt'):
@@ -151,27 +154,23 @@ class Cgen:
             f.close()
 
 
-class SmartFormatter(argparse.HelpFormatter):
-    def _split_lines(self, text, width):
-        if text.startswith('R|'):
-            return text[2:].splitlines()
-            # this is the RawTextHelpFormatter._split_lines
-        return argparse.HelpFormatter._split_lines(self, text, width)
-
-
 if __name__ == '__main__':
-    cgen = Cgen()
     if len(args) == 1 or args[1] == '-h':
+        cgen = Cgen(None, None, None)
         cgen.help_mode()
     elif args[1] == '-i':
-        cgen.interactive_mode(None, None)
+        cgen = Cgen(None, None, None)
+        cgen.interactive_mode()
     elif args[1] == '-f':
+
         input_path = args[2]
         mode = args[4]
         output_path = args[6]
         f = open(input_path, "rt")
         input_string = f.read()
         f.close()
-        cgen.interactive_mode(input_string, output_path)
+        cgen = Cgen(input_string, output_path, mode)
+        cgen.interactive_mode()
     else:
+        cgen = Cgen(None, None, None)
         cgen.help_mode()
